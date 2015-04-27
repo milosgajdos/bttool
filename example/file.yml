@@ -1,0 +1,9 @@
+trackers:
+    - udp://tracker.openbittorrent.com:80
+    - udp://tracker.openbittorrent.com:80
+data:
+  src: /some/src/path
+  dst: /some/random/path
+piecelength: 32KiB
+author: Johnny Bravo
+comment: This is just a test
