@@ -136,9 +136,7 @@ func (e *Encode) Run(flagSet *flag.FlagSet) int {
 	if len(m.Trackers) > 0 {
 		b.AddAnnounceGroup(m.Trackers)
 	} else {
-		// TODO: add nodes support to metainfo package
-		fmt.Println("DHT will be used")
-		return 1
+		b.AddDhtNodes(m.DhtNodes)
 	}
 
 	if m.Data.Dst != "" {
