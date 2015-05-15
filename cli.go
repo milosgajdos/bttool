@@ -122,6 +122,12 @@ func (e *Encode) Run(flagSet *flag.FlagSet) int {
 	}
 
 	b := metainfo.Builder{}
+
+	if _, err := os.Stat(m.Data.Src); os.IsNotExist(err) {
+		StdErr("%s", err)
+		return 1
+	}
+
 	if err := filepath.Walk(m.Data.Src, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
