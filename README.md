@@ -33,9 +33,23 @@ comment: This is just a test
 Decode subcommand by default reads bencoded files from ```stdin``` and dumps the decoded data into ```stdout```. You can specify a format into which the decoded data should be encoded. Currently only ```json``` data is supported.
 
 The following commands should run without any problems:
-- ```cat test.torrent | bttool decode  -format json -outfile test.json``` - decodes ```test.torrent``` into ```json``` and dump the output into ```test.json``` file
-- ```cat test.torrent | bttool decode``` - decodes ```test.torrent``` into text, dumps the content to ```stdout```
-- ```bttool decode test.torrent -format json -outfile test.dump``` - decodes ```test.torrent``` into ```json```, dumps the content into ```test.dump```
+- ```cat test.torrent | bttool decode  -format json -outfile test.json```
+    - decodes ```test.torrent``` into ```json``` and dump the output into ```test.json``` file
+- ```cat test.torrent | bttool decode``` 
+    - decodes ```test.torrent``` into text, dumps the content to ```stdout```
+- ```bttool decode test.torrent -format json -outfile test.dump``` 
+    - decodes ```test.torrent``` into ```json```, dumps the content into ```test.dump```
+
+## validate
+Validate subcommand by default reads bencoded metainfo files from ```stdin``` and validates it against data passed it via ```-data``` command line parameter. If the validation fails, the tool exits with non-zero return code. You can use ```-verbose``` command line flag which will print out validation result for each metainfo file piece.
+
+The following commands should run withouth any problems:
+- ```cat test.torrent| bttool validate -data=/path/to/data```
+    - validates ```test.torrent``` against ```/path/to/data```
+- ```bttool validate -data=data=/path/to/data test.torrent```
+    - same as above, but torrent data is passed as a command line argument
+- ```bttool validate -verbose -data=data=/path/to/data test.torrent```
+    - same as above, but run in verbose mode
 
 ## Usage
 Get the package:
@@ -60,4 +74,4 @@ go build
 
 ## TODO
 - tests
-- implement ```validate``` and ```send``` commands
+- ```send``` commands
