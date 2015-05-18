@@ -14,13 +14,27 @@ import (
 
 	"launchpad.net/gommap"
 
+	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/mmap_span"
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	commands = append(commands, &Decode{}, &Encode{}, &Validate{}, &Send{})
+	commands = append(commands, &Decode{}, &Encode{}, &Validate{}, &Magnet{}, &Send{})
+}
+
+func ArgsToMetainfo(mInfoArgs []string) (*metainfo.MetaInfo, error) {
+	var m *metainfo.MetaInfo
+	var err error
+
+	if len(mInfoArgs) > 0 {
+		m, err = metainfo.LoadFromFile(mInfoArgs[0])
+	} else {
+		m, err = metainfo.Load(os.Stdin)
+	}
+
+	return m, err
 }
 
 type Decode struct {
@@ -225,21 +239,10 @@ func (v *Validate) Help() string {
 // https://github.com/anacrolix/torrent/tree/master/cmd/torrent-verify
 func (v *Validate) Run(flagSet *flag.FlagSet) int {
 	mInfoArgs := flagSet.Args()
-	var m *metainfo.MetaInfo
-	var err error
-
-	if len(mInfoArgs) > 0 {
-		m, err = metainfo.LoadFromFile(mInfoArgs[0])
-		if err != nil {
-			StdErr("%s", err)
-			return 1
-		}
-	} else {
-		m, err = metainfo.Load(os.Stdin)
-		if err != nil {
-			StdErr("%s", err)
-			return 1
-		}
+	m, err := ArgsToMetainfo(mInfoArgs)
+	if err != nil {
+		StdErr("%s", err)
+		return 1
 	}
 
 	devZero, err := os.Open("/dev/zero")
@@ -295,6 +298,47 @@ func fileToMmap(filename string, length int64, devZero *os.File) gommap.MMap {
 	osFile.Close()
 
 	return goMMap
+}
+
+type Magnet struct {
+	tracker string
+}
+
+func (m *Magnet) Name() string {
+	return "magnet"
+}
+
+func (m *Magnet) DefineFlags(flagSet *flag.FlagSet) {
+}
+
+func (m *Magnet) Help() string {
+	return fmt.Sprintf("%s METAINFO-FILE", m.Name())
+}
+
+func (m *Magnet) Run(flagSet *flag.FlagSet) int {
+	mInfoArgs := flagSet.Args()
+	mi, err := ArgsToMetainfo(mInfoArgs)
+	if err != nil {
+		StdErr("%s", err)
+		return 1
+	}
+
+	ts := torrent.TorrentSpecFromMetaInfo(mi)
+	magnet := torrent.Magnet{
+		InfoHash: ts.InfoHash,
+		Trackers: func() (ret []string) {
+			for _, tier := range ts.Trackers {
+				for _, tr := range tier {
+					ret = append(ret, tr)
+				}
+			}
+			return
+		}(),
+		DisplayName: ts.DisplayName,
+	}
+	fmt.Fprintf(os.Stdout, "%s\n", magnet.String())
+
+	return 0
 }
 
 type Send struct {

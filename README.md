@@ -51,6 +51,13 @@ The following commands should run withouth any problems:
 - ```bttool validate -verbose -data=data=/path/to/data test.torrent```
     - same as above, but run in verbose mode
 
+## magnet
+Magnet subcommand reads bencoded meatinfo files from ```stdin``` and outputs its Magnet URL. Both examples print magnet URL into ```stdout```
+
+The following commands should run without any problems:
+- ```cat test.torrent| bttool magnet```
+- ```bttool magnet test.torrent```
+
 ## Usage
 Get the package:
 
